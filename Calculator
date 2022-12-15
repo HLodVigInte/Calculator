@@ -1,0 +1,256 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.*;
+
+public class Calculator {
+    static Boolean ArabianRomanNumber;
+    BufferedReader broad;
+
+    public Calculator(InputStreamReader isr) {
+        broad = new BufferedReader(isr);
+    }
+    public static void main(String[] args) {
+        new Calculator(new InputStreamReader(System.in)).play();
+    }
+
+    public void play() {
+        String a,b,c;
+        String txt;
+        int state = 0;
+        System.out.println("Введите выражение, используя римские или арабские числа");
+        try {
+            while((txt = broad.readLine()) != null && !txt.equals("111")) {
+                switch (state) {
+                    case 0:
+                        txt = txt.trim();
+                        ArabianRomanNumber = true;
+                        String(txt);
+                        a = Compl(txt,true)[0];
+                        b = Compl(txt,true)[2];
+                        c = Compl(txt,true)[1];
+                        if (!ArabianRomanNumber) {
+                            a = RomanNumber.valueOf(a).toString();
+                            b = RomanNumber.valueOf(b).toString();
+                        } operations(a, b, c, ArabianRomanNumber);
+                        state = 0;
+                }
+            }
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    static void operations(String a, String b, String c, boolean ArabianRomanNumber) {
+        int x, y;
+        x = Integer.parseInt(a);
+        y = Integer.parseInt(b);
+        switch (c) {
+            case "+":
+                process("" + (x + y), ArabianRomanNumber);
+                break;
+            case "-":
+                process("" + (x - y), ArabianRomanNumber);
+                break;
+            case "*":
+                process("" + (x * y), ArabianRomanNumber);
+                break;
+            case "/":
+                process("" + (x / y), ArabianRomanNumber);
+                break;
+            default:
+                System.out.println("Операция невозможна");
+        }
+    }
+
+    static void String(String txt) throws Exception {
+        final String a,b,c;
+        a=Compl(txt,true)[0];
+        b=Compl(txt,true)[2];
+        c=Compl(txt,true)[1];
+        try {
+            if(!choiseoperation(c)) {
+                throw new Exception("Операция невозможна, можно ввести только эти знаки: [+-*/]");
+            }
+            if (Arab(a) && Arab(b)) {
+                ArabianRomanNumber=true;
+            }else if(Rum(a) && Rum(b)){
+                ArabianRomanNumber=false;
+            }else{
+                throw new Exception("Введенные числа не соответсвуют формату");
+            }
+        }catch(Exception e){
+            throw new Exception("Введенные числа не соответсвуют формату");
+        }
+    }
+
+    static boolean Arab (String txt) throws Exception {
+        try {
+            for (ArabNumber arab : ArabNumber.values()) {
+                if (txt.equals(arab.getNum())) {
+                    return true;
+                }
+            } return false;
+        }catch (Exception e){
+            throw new Exception("Введенные числа не соответсвуют формату");
+        }
+    }
+
+    static boolean Rum(String txt) throws Exception {
+        try {
+            for (RomanNumber Rome : RomanNumber.values()) {
+                if (txt.equals(Rome.name())) {
+                    return true;
+                }
+            }
+            return false;
+        }catch (Exception e){
+            throw new Exception("Введенные числа не соответсвуют формату");
+        }
+    }
+
+    static boolean choiseoperation(String txt) throws Exception {
+        try {
+            for (Symbol z : Symbol.values()) {
+                if (txt.equals(z.getSymbol())) {
+                    return true;
+                }
+            }
+            return false;
+        }catch (Exception e){
+            throw new Exception("Допустимые операции: [+-*/]");
+        }
+    }
+
+    public static void process (String txt, boolean truefalse){
+        try {
+            if (truefalse) {
+                System.out.println(txt);
+            } else {
+                System.out.println(transformation(txt, false));
+            }
+        } catch (Exception e) {
+            progress(e.getMessage());
+        }
+    }
+
+    public static void progress(String txt){
+        System.out.println(txt);
+    }
+
+    static String transformation(String txt, boolean fs) throws Exception{
+        try {
+            return ConvertRome(Compl(txt, fs)[0]);
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public static String specialName(int v){
+        String txt=String.valueOf(v);
+        if (txt.length()>4){
+            v=Integer.parseInt(txt.substring(0,3));
+        }
+        for(RomanNumberOut e : RomanNumberOut.values()){
+            if(v==e.getNumber()) {
+                return e.name();
+            }
+        } return null;
+    }
+
+    static String[] Compl(String txt, boolean ooo) throws Exception {
+        try {
+            StringTokenizer st;
+            st = new StringTokenizer(txt, "+-*/", true);
+            String[] arr = new String[st.countTokens()];
+            if (ooo){
+                if (arr.length != 3){
+                    throw new Exception("Операция невозможна");
+                }
+            }else{
+                if (arr.length != 1){
+                    throw new Exception("Римские числа не могут быть отрицательными");
+                }
+            }
+            int i=0;
+            while (st.hasMoreTokens()) {
+                arr[i] = st.nextToken();
+                i++;
+            }
+            return arr;
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public static String ConvertRome(String txt) {
+        int num = Integer.parseInt(txt);
+        if (num >= 4000 || num < 1) {
+            return "0";}
+        StringBuilder result = new StringBuilder();
+        for(RomanNumberOut rim : RomanNumberOut.values()) {
+            while (num >= rim.getNumber()) {
+                num -= rim.getNumber();
+                result.append(specialName(rim.getNumber()));
+            }
+        }
+        return result.toString();
+    }
+    public enum ArabNumber {
+        one("1"),two("2"),three("3"),four("4"),five("5"),
+        six("6"),seven("7"),eight("8"),nine("9"),ten("10");
+
+        private final String num;
+        ArabNumber(String num){
+            this.num = num;
+        }
+        public String getNum(){
+            return num;
+        }
+        public String toString(){
+            return num;
+        }
+    }
+    public enum RomanNumber {
+        I("1"),II("2"),III("3"),IV("4"),V("5"),
+        VI("6"),VII("7"),VIII("8"),IX("9"),X("10");
+
+        private final String num;
+        RomanNumber(String num){
+            this.num = num;
+        }
+        public String getNum(){
+            return num;
+        }
+        public String toString(){
+            return num;
+        }
+    }
+    public enum RomanNumberOut {
+        M(1000),CM(900),D(500), CD(400),C(100),XC(90),
+        L(50), XL(40),X(10),IX(9),V(5),IV(4),I(1);
+
+        private final int num;
+        RomanNumberOut(int num){
+            this.num = num;
+        } public int getNumber() {
+            return num;
+        } public String toString(){
+            return String.valueOf(num);
+        }
+    }
+    public enum Symbol {
+        plus("+"),minus("-"),mng("*"), del("/");
+        private final String op;
+
+        Symbol(String op){
+            this.op = op;
+        }
+
+        public String getSymbol(){
+            return op;
+        }
+        public String toString(){
+            return op;
+        }
+    }
+}
